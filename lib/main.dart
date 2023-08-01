@@ -35,9 +35,9 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
 
-      home: HomePage(),
+      //home: HomePage(),
 
-      //home: const VideoInfo(),
+      home: const VideoInfo(),
     );
   }
 }

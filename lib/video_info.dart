@@ -1,4 +1,4 @@
-import 'package:flutter/services.dart' show rootBundle;
+//import 'package:flutter/services.dart' show rootBundle;
 // ignore_for_file: prefer_const_constructors, unused_field, avoid_single_cascade_in_expression_statements, prefer_is_empty, prefer_typing_uninitialized_variables, prefer_conditional_assignment, prefer_const_literals_to_create_immutables
 
 import 'dart:convert';
@@ -45,7 +45,7 @@ class _VideoInfoState extends State<VideoInfo> {
     _initData();
   }
 
-  /*void _toggleFullScreen() {
+  void _toggleFullScreen() {
     if (_fullScreen) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
           overlays: SystemUiOverlay.values);
@@ -58,7 +58,7 @@ class _VideoInfoState extends State<VideoInfo> {
     setState(() {
       _fullScreen = !_fullScreen;
     });
-  }*/
+  }
 
   @override
   void dispose() {
@@ -258,7 +258,7 @@ class _VideoInfoState extends State<VideoInfo> {
                           ],
                         ),
                       ),
-                      //_playView(context),
+                      _playView(context),
                     ],
                   ),
                 ),
@@ -444,6 +444,79 @@ class _VideoInfoState extends State<VideoInfo> {
         ),
       ]))
     ]);
+  }
+
+  Widget _playView(BuildContext context) {
+    final controller = _controller;
+    if (controller != null && controller.value.isInitialized) {
+      // if (_controller?.value.isInitialized ?? true){
+      return AspectRatio(
+        aspectRatio: 16 / 10,
+        //controller.value.aspectRatio,
+        child: Stack(children: [
+          VideoPlayer(controller),
+          SizedBox(
+            height: 200,
+            child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: Colors.red[700],
+                  inactiveTrackColor: Colors.red[100],
+                  trackShape: RoundedRectSliderTrackShape(),
+                  trackHeight: 2.0,
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 12.0),
+                  thumbColor: Colors.redAccent,
+                  overlayColor: Colors.red.withAlpha(32),
+                  overlayShape: RoundSliderOverlayShape(overlayRadius: 28.0),
+                  tickMarkShape: RoundSliderTickMarkShape(),
+                  activeTickMarkColor: Colors.red[700],
+                  inactiveTickMarkColor: Colors.red[100],
+                  valueIndicatorShape: PaddleSliderValueIndicatorShape(),
+                  valueIndicatorColor: Colors.redAccent,
+                  valueIndicatorTextStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                child: Slider(
+                  value: max(0, min(_progress * 100, 100)),
+                  min: 0,
+                  max: 100,
+                  divisions: 100,
+                  label: _position?.toString().split(".")[0],
+                  onChanged: (value) {
+                    setState(() {
+                      _progress = value * 0.01;
+                    });
+                  },
+                  onChangeStart: (value) {
+                    _controller?.pause();
+                  },
+                  onChangeEnd: (value) {
+                    final duration = _controller?.value.duration;
+                    if (duration != null) {
+                      var newValue = max(0, min(value, 99)) * 0.01;
+                      var millis = (duration.inMilliseconds * newValue).toInt();
+                      _controller?.seekTo(Duration(milliseconds: millis));
+                      _controller?.play();
+                    }
+                  },
+                )),
+          ),
+          IconButton(
+            icon: Icon(_fullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
+            onPressed: (_toggleFullScreen),
+          ),
+          _controlView(context),
+        ]),
+      );
+    } else {
+      return AspectRatio(
+          aspectRatio: 10 / 1,
+          child: Center(
+              child: Text(
+            " Prepearing ...",
+            style: TextStyle(fontSize: 20, color: Colors.white60),
+          )));
+    }
   }
 
   _onTapVideo(int index) {
